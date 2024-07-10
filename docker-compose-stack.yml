@@ -1,0 +1,362 @@
+version: "3.8"
+
+services:
+
+  # Plex - Media Server
+  plex:
+    container_name: plex
+    image: ghcr.io/hotio/plex
+    ports:
+      - "32400:32400"
+    environment:
+      - PUID=99
+      - PGID=100
+      - TZ=Europe/Madrid
+      - PLEX_CLAIM_TOKEN=qzGq2gYBrnqzB_9t1CdG # Go to: https://www.plex.tv/claim
+      - PLEX_ADVERTISE_URL=192.168.1.127:32400
+      - PLEX_BETA_INSTALL=false
+      - PLEX_PURGE_CODECS=false
+      - PLEX_PASS=true
+      - /dev/dri:/dev/dri
+    volumes:
+      - /mnt/user/appdata/plex:/config
+      - /mnt/user/tmp/plex:/transcode
+      - /mnt/user/data/media:/data/media
+    restart: unless-stopped
+
+
+  # Autoscan - Automatically scan for new media on Plex
+  autoscan:
+    container_name: autoscan
+    image: ghcr.io/hotio/autoscan
+    networks:
+      - aeronnet
+    ports:
+      - "3030:3030"
+    environment:
+      - PUID=99
+      - PGID=100
+      - TZ=Europe/Madrid
+      - PLEX_LOGIN=plex@erphise.com
+      - PLEX_PASSWORD=x9UoU2idR-gg2f6tNtT9g
+    volumes:
+      - /mnt/user/appdata/autoscan:/config
+    restart: unless-stopped
+    depends_on:
+    - plex
+
+
+  flaresolverr:
+    container_name: flaresolverr
+    image: ghcr.io/flaresolverr/flaresolverr
+    ports:
+      - "8191:8191"
+    environment:
+      - LOG_LEVEL=info
+      - TZ=Europe/Madrid
+    networks:
+      - aeronnet
+    restart: unless-stopped
+
+
+  # Prowlarr - Torrent proxy
+  prowlarr:
+    container_name: prowlarr
+    image: ghcr.io/hotio/prowlarr
+    networks:
+      - aeronnet
+    ports:
+      - "9696:9696"
+    environment:
+      - PUID=99
+      - PGID=100
+      - TZ=Europe/Madrid
+    volumes:
+      - /mnt/user/appdata/prowlarr:/config
+    restart: unless-stopped
+    depends_on:
+    - flaresolverr
+
+
+  # Radarr - Movie management
+  radarr:
+    container_name: radarr
+    image: ghcr.io/hotio/radarr
+    networks:
+      - aeronnet
+    ports:
+      - "7878:7878"
+    environment:
+      - PUID=99
+      - PGID=100
+      - TZ=Europe/Madrid
+    volumes:
+      - /mnt/user/appdata/radarr:/config
+      - /mnt/user/data:/data
+    restart: unless-stopped
+
+
+  # Radarr 4K - UHD Movie management
+  radarr-uhd:
+    container_name: radarr-uhd
+    image: ghcr.io/hotio/radarr
+    networks:
+      - aeronnet
+    ports:
+      - "7879:7878"
+    environment:
+      - PUID=99
+      - PGID=100
+      - TZ=Europe/Madrid
+    volumes:
+      - /mnt/user/appdata/radarr-uhd:/config
+      - /mnt/user/data:/data
+    restart: unless-stopped
+
+
+  # Sonarr - TV Shows management
+  sonarr:
+    container_name: sonarr
+    image: ghcr.io/hotio/sonarr
+    networks:
+      - aeronnet
+    ports:
+      - "8989:8989"
+    environment:
+      - PUID=99
+      - PGID=100
+      - TZ=Europe/Madrid
+    volumes:
+      - /mnt/user/appdata/sonarr:/config
+      - /mnt/user/data:/data
+    restart: unless-stopped
+
+
+  # Sonarr 4K - TV Shows management
+  sonarr-uhd:
+    container_name: sonarr-uhd
+    image: ghcr.io/hotio/sonarr
+    networks:
+      - aeronnet
+    ports:
+      - "8998:8989"
+    environment:
+      - PUID=99
+      - PGID=100
+      - TZ=Europe/Madrid
+    volumes:
+      - /mnt/user/appdata/sonarr-uhd:/config
+      - /mnt/user/data:/data
+    restart: unless-stopped
+
+
+  # Bazarr - Subtitle management
+  bazarr:
+    container_name: bazarr
+    image: ghcr.io/hotio/bazarr
+    networks:
+      - aeronnet
+    ports:
+      - "6767:6767"
+    environment:
+      - PUID=99
+      - PGID=100
+      - TZ=Europe/Madrid
+    volumes:
+      - /mnt/user/appdata/bazarr:/config
+      - /mnt/user/data/media:/data/media
+    restart: unless-stopped
+    depends_on:
+    - radarr
+    - radarr-uhd
+    - sonarr
+    - sonarr-uhd
+
+
+  # Lidarr - Music management
+  lidarr:
+    container_name: lidarr
+    image: ghcr.io/hotio/lidarr
+    networks:
+      - aeronnet
+    ports:
+      - "8686:8686"
+    environment:
+      - PUID=99
+      - PGID=100
+      - TZ=Europe/Madrid
+    volumes:
+      - /mnt/user/appdata/lidarr:/config
+      - /mnt/user/data:/data
+    restart: unless-stopped
+
+
+  # Readarr - Books management
+  readarr:
+    container_name: readarr
+    image: ghcr.io/hotio/readarr
+    networks:
+      - aeronnet
+    ports:
+      - "8787:8787"
+    environment:
+      - PUID=99
+      - PGID=100
+      - TZ=Europe/Madrid
+    volumes:
+      - /mnt/user/appdata/readarr:/config
+      - /mnt/user/data:/data
+    restart: unless-stopped
+
+
+  # Overseerr - Media requests
+  overseerr:
+    container_name: overseerr
+    image: ghcr.io/hotio/overseerr
+    networks:
+      - aeronnet
+    ports:
+      - "5055:5055"
+    environment:
+      - PUID=99
+      - PGID=100
+      - TZ=Europe/Madrid
+    volumes:
+      - /mnt/user/appdata/overseerr:/config
+      - /mnt/user/data/media:/data/media
+    restart: unless-stopped
+    depends_on:
+    - plex
+    - radarr
+    - radarr-uhd
+    - sonarr
+    - sonarr-uhd
+
+
+# qBittorrent - Torrent downloader with VPN
+  # This image comes bundled with the alternative Web UI VueTorrent (/app/vuetorrent) and Nightwalker (/app/nightwalker)
+  qbittorrent:
+    container_name: qbittorrent
+    image: ghcr.io/hotio/qbittorrent
+    networks:
+      - aeronnet
+    ports:
+      - "8080:8080"
+      - "8118:8118"
+    environment:
+      - PUID=99
+      - PGID=100
+      - TZ=Europe/Madrid
+      - VPN_ENABLED=true # There needs to be a file wg0.conf located in /config/wireguard
+      - VPN_PROVIDER=proton # Possible values are generic, proton and pia.
+      - VPN_LAN_NETWORK=192.168.1.0/24 # Every device with an ip in the range 192.168.1.0 - 192.168.1.255 on your LAN is allowed access to the WebUI
+      - VPN_CONF=wg0
+      - VPN_LAN_LEAK_ENABLED=false
+      - PRIVOXY_ENABLED=false
+      - VPN_FIREWALL_TYPE=auto
+      - VPN_AUTO_PORT_FORWARD=true # Auto retrieve a forwarded port and configure the supported app if set to true or if you can manually request/set a forwarded port in the VPN provider's web interface, fill in the port number.
+      - VPN_KEEP_LOCAL_DNS=false # Setting this to true will re-add the default nameserver if it's been overwritten by the DNS = ... entry in wgO.conf. This should keep container name resolution working.
+      - VPN_HEALTHCHECK_ENABLED=true
+      - UNBOUND_ENABLED=false # When enabling the Unbound DNS server your requests will use DNS over TLS to Cloudflare. 
+    volumes:
+      - /mnt/user/appdata/qbittorrent:/config
+      - /mnt/user/data/torrents:/data/torrents
+    cap_add:
+      - NET_ADMIN
+    dns:
+      - 1.1.1.1
+    sysctls:
+      - net.ipv4.conf.all.src_valid_mark=1
+      - net.ipv6.conf.all.disable_ipv6=1 # You can enable ipv6 support by setting the value to 0
+    restart: unless-stopped
+
+
+  # autobrr - Download automation tool
+  autobrr:
+    container_name: autobrr
+    image: ghcr.io/autobrr/autobrr:latest
+    networks:
+      - aeronnet
+    ports:
+      - "7474:7474"
+    environment:
+      - PUID=99
+      - PGID=100
+      - TZ=Europe/Madrid
+    volumes:
+      - /mnt/user/appdata/autobrr:/config
+    restart: unless-stopped
+
+
+  omegabrr:
+    container_name: omegabrr
+    image: ghcr.io/autobrr/omegabrr
+    environment:
+      - PUID=99
+      - PGID=100
+      - TZ=Europe/Madrid
+    volumes:
+      - /mnt/user/appdata/omegabrr:/config
+    networks:
+      - aeronnet
+    restart: unless-stopped
+
+
+  cross-seed:
+    container_name: cross-seed
+    image: ghcr.io/cross-seed/cross-seed
+    ports:
+      - "2468:2468" # you'll need this for daemon mode only
+    environment:
+      - PUID=99
+      - PGID=100
+      - TZ=Europe/Madrid
+    volumes:
+      - /mnt/user/appdata/cross-seed:/config
+      - /path/to/torrent_dir:/torrents:ro # your torrent clients .torrent cache, can and should be mounted read-only (BT_Backup). I now have: /torrents <-> /mnt/user/data/torrents/cross-seed-blank
+      - /path/to/output/folder:/cross-seeds # In unRAID I now have: /cross-seeds <-> /mnt/user/data/torrents/cross-seed-torrents
+      - /mnt/user/data/torrents:/data/torrents # OPTIONAL!!! this is location of your data (used for data-based searches or linking)
+        # will need to mirror your torrent client's path (like Arr's do)
+    command: deamon # this enables the daemon, change to search to specifically run a search ONLY
+    networks:
+      - aeronnet
+    restart: unless-stopped # make sure to not enable it in search mode, otherwise it will keep rerunning constantly
+    depends_on:
+      - qbittorrent
+
+
+  # Tautulli - Plex statistics and monitoring
+  tautulli:
+    container_name: tautulli
+    image: ghcr.io/hotio/tautulli
+    networks:
+      - aeronnet
+    ports:
+      - "8181:8181"
+    environment:
+      - PUID=99
+      - PGID=100
+      - TZ=Europe/Madrid
+    volumes:
+      - /mnt/user/appdata/tautulli:/config
+    restart: unless-stopped
+    depends_on:
+    - plex
+
+
+  # Unpackerr - Extract .rar files
+  unpackerr:
+    container_name: unpackerr
+    image: ghcr.io/hotio/unpackerr
+    environment:
+      - PUID=99
+      - PGID=100
+      - TZ=Europe/Madrid
+    volumes:
+      - /mnt/user/appdata/unpacker:/config
+      - /mnt/user/data:/data
+    restart: unless-stopped
+
+networks:
+  aeronnet:
+    driver: bridge
