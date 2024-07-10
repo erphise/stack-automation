@@ -1,4 +1,6 @@
-version: "3.8"
+networks:
+  ${DOCKER_NETWORK}:
+    driver: bridge
 services:
   plex:
     container_name: plex
@@ -9,11 +11,11 @@ services:
       - PUID=${PUID}
       - PGID=${PGID}
       - TZ=${TZ}
-      - PLEX_CLAIM_TOKEN= # Go to: https://www.plex.tv/claim
-      - PLEX_ADVERTISE_URL=
+      - PLEX_CLAIM_TOKEN=${PLEX_CLAIM}
+      - PLEX_ADVERTISE_URL=${PLEX_URL}
       - PLEX_BETA_INSTALL=false
       - PLEX_PURGE_CODECS=false
-      - PLEX_PASS=true
+      - PLEX_PASS=${PLEX_PASS}
       - /dev/dri:/dev/dri
     volumes:
       - ${CONFIG_PATH}/plex:/config
@@ -31,8 +33,8 @@ services:
       - PUID=${PUID}
       - PGID=${PGID}
       - TZ=${TZ}
-      - PLEX_LOGIN=
-      - PLEX_PASSWORD=
+      - PLEX_LOGIN=${PLEX_LOGIN}
+      - PLEX_PASSWORD=${PLEX_PASSWORD}
     volumes:
       - ${CONFIG_PATH}/autoscan:/config
     restart: unless-stopped
@@ -208,9 +210,9 @@ services:
       - PUID=${PUID}
       - PGID=${PGID}
       - TZ=${TZ}
-      - VPN_ENABLED=true # There needs to be a file wg0.conf located in /config/wireguard
-      - VPN_PROVIDER=proton # Possible values are generic, proton and pia.
-      - VPN_LAN_NETWORK=192.168.1.0/24 # Every device with an ip in the range 192.168.1.0 - 192.168.1.255 on your LAN is allowed access to the WebUI
+      - VPN_ENABLED=${VPN_ENABLED} # There needs to be a file wg0.conf located in /config/wireguard
+      - VPN_PROVIDER=${VPN_PROVIDER} # Possible values are generic, proton and pia.
+      - VPN_LAN_NETWORK=${VPN_LAN_NETWORK} # Every device with an ip in the range 192.168.1.0 - 192.168.1.255 on your LAN is allowed access to the WebUI
       - VPN_CONF=wg0
       - VPN_LAN_LEAK_ENABLED=false
       - PRIVOXY_ENABLED=false
@@ -267,8 +269,8 @@ services:
       - TZ=${TZ}
     volumes:
       - ${CONFIG_PATH}/cross-seed:/config
-      - /path/to/torrent_dir:/torrents:ro # your torrent clients .torrent cache, can and should be mounted read-only (BT_Backup). I now have: /torrents <-> ${DATA_PATH}/torrents/cross-seed-blank
-      - /path/to/output/folder:/cross-seeds # In unRAID I now have: /cross-seeds <-> ${DATA_PATH}/torrents/cross-seed-torrents
+      - ${PATH_TO_TORRENTDIR}:/torrents:ro # your torrent clients .torrent cache, can and should be mounted read-only (BT_Backup). I now have: /torrents <-> ${DATA_PATH}/torrents/cross-seed-blank
+      - ${PATH_TO_OUTPUT_FOLDER}:/cross-seeds # In unRAID I now have: /cross-seeds <-> ${DATA_PATH}/torrents/cross-seed-torrents
       - ${DATA_PATH}/torrents:/data/torrents # OPTIONAL!!! this is location of your data (used for data-based searches or linking)
         # will need to mirror your torrent client's path (like Arr's do)
     command: deamon # this enables the daemon, change to search to specifically run a search ONLY
@@ -304,6 +306,3 @@ services:
       - ${CONFIG_PATH}/unpacker:/config
       - ${DATA_PATH}:/data
     restart: unless-stopped
-networks:
-  ${DOCKER_NETWORK}:
-    driver: bridge
