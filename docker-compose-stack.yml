@@ -313,8 +313,8 @@ services:
       - TZ=Europe/Madrid
     volumes:
       - /mnt/user/appdata/cross-seed:/config
-      - /path/to/torrent_dir:/torrents:ro # your torrent clients .torrent cache, can and should be mounted read-only (BT_Backup). I now have: /torrents <-> /mnt/user/data/torrents/cross-seed-blank
-      - /path/to/output/folder:/cross-seeds # In unRAID I now have: /cross-seeds <-> /mnt/user/data/torrents/cross-seed-torrents
+      - /mnt/user/appdata/qbittorrent/data/BT_Backup:/torrents:ro # your torrent clients .torrent cache, can and should be mounted read-only (BT_Backup). I now have: /torrents <-> /mnt/user/data/torrents/cross-seed-blank
+      - /mnt/user/data/torrents/cross-seeds:/cross-seeds # In unRAID I now have: /cross-seeds <-> /mnt/user/data/torrents/cross-seed-torrents
       - /mnt/user/data/torrents:/data/torrents # OPTIONAL!!! this is location of your data (used for data-based searches or linking)
         # will need to mirror your torrent client's path (like Arr's do)
     command: deamon # this enables the daemon, change to search to specifically run a search ONLY
