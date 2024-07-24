@@ -91,6 +91,17 @@ services:
       - /volume1/Docker/lidarr:/config
       - /volume3/data:/data
     restart: unless-stopped
+  notifiarr:
+    container_name: notifiarr
+    hostname: notifiarr
+    image: golift/notifiarr
+    ports:
+      - "5454:5454"
+    volumes:
+      - /volume1/Docker/notifiarr:/config
+      - /var/run/utmp:/var/run/utmp
+      - /etc/machine-id:/etc/machine-id
+    restart: unless-stopped
   jellyseerr:
     container_name: jellyseerr
     image: ghcr.io/hotio/jellyseerr

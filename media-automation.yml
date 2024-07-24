@@ -209,6 +209,20 @@ services:
     restart: unless-stopped
 
 
+# Notifiarr - Sync starr apps with Trash-Guides. Needs registration on https://notifiarr.com and it's API Key.
+  notifiarr:
+    container_name: notifiarr
+    hostname: notifiarr
+    image: golift/notifiarr
+    ports:
+      - "5454:5454"
+    volumes:
+      - /mnt/user/appdata/notifiarr:/config
+      - /var/run/utmp:/var/run/utmp
+      - /etc/machine-id:/etc/machine-id
+    restart: unless-stopped
+
+
   # Overseerr - Media requests
   overseerr:
     container_name: overseerr
