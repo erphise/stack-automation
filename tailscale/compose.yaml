@@ -1,0 +1,22 @@
+services:
+  tailscale:
+    container_name: tailscaled
+    image: tailscale/tailscale
+    network_mode: host
+    privileged: true
+    cap_add:
+      - NET_ADMIN
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TS_USERSPACE=true
+      - TS_AUTH_KEY=
+      - TS_ROUTES=192.168.1.0/24
+      - TS_EXTRA_ARGS=--advertise-exit-node
+    volumes:
+      - /var/lib:/var/lib
+      - /dev/net/tun:/dev/net/tun
+    command:
+      - tailscaled
+    restart: unless-stopped
+networks: {}
