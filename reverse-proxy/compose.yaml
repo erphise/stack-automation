@@ -2,20 +2,37 @@ services:
   caddy:
     container_name: caddy
     image: ghcr.io/hotio/caddy
+    networks:
+      - ${DOCKER_NETWORK}
     ports:
       - 80:80
       - 443:443
     environment:
-      - PUID=1000
-      - PGID=1000
-      - UMASK=002
-      - TZ=Europe/Madrid
-      - CLOUDFLARE_API_TOKEN=p0c_Ko4m2zpfcSYwyqnUnCybJb3Xx3lHm0XimTpC
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - UMASK=${UMASK}
+      - TZ=${TZ}
+      - CLOUDFLARE_API_TOKEN=${CLOUDFLARE_API_TOKEN}
     volumes:
-      - /opt/stacks/caddy:/config
-    networks:
-      - voynet
+      - ${CONFIG_PATH}/caddy:/config
     restart: unless-stopped
-networks:
-  voynet:
-    external: true
+  cloudflareddns:
+    container_name: cloudflareddns
+    image: ghcr.io/hotio/cloudflareddns
+    networks:
+      - ${DOCKER_NETWORK}
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - UMASK=${UMASK}
+      - TZ=${TZ}
+      - INTERVAL=300
+      - DETECTION_MODE=dig-whoami.cloudflare
+      - LOG_LEVEL=3
+      - CF_APITOKEN=${CLOUDFLARE_API_TOKEN}
+      - CF_HOSTS=${DOMAIN}
+      - CF_ZONES=${CF_ZONE_ID}
+      - CF_RECORDTYPES=A
+    volumes:
+      - ${CONFIG_PATH}/cloudflareddns:/config
+    restart: unless-stopped
