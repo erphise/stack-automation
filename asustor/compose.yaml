@@ -92,9 +92,7 @@ services:
     restart: unless-stopped
     depends_on:
     - radarr
-    - radarr-uhd
     - sonarr
-    - sonarr-uhd
   lidarr:
     container_name: lidarr
     image: ghcr.io/hotio/lidarr
